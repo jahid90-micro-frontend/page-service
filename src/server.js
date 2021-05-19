@@ -18,6 +18,12 @@ app.get('/', async (req, res) => {
     const content = await axios.post('http://layout.service', { pageId });
     const { title, layout, slots } = content.data.page;
 
+    await Promise.all(slots.map(async (slot) => {
+        const resp = await axios.post('http://content.service', { pageId, slotId: slot.id });
+        const { widget } = resp.data;
+        slot.widget = widget;
+    }));
+
     res.render(layouts[layout], { title, slots });
 });
 
