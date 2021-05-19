@@ -1,0 +1,12 @@
+doctype html
+html(lang='en')
+
+head
+  title= title
+
+body
+  h1 Welcome to the frontend!
+
+  each slot in slots
+    div(class='slot-' + slot.id)
+
