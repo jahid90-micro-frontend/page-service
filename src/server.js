@@ -21,15 +21,15 @@ app.get('/', async (req, res) => {
     await Promise.all(slots.map(async (slot) => {
 
         const cResp = await axios.post('http://content.service', { pageId, slotId: slot.id });
-        const { widgetId } = cResp.data;
+        const { widget: widgetId } = cResp.data;
 
         const wResp = await axios.post('http://widget.service', { widgetId });
 
-        const { widget } = wResp.data;
+        let { widget } = wResp.data;
+        widget = widget || {};
+        widget.id = widget.id || widgetId;
         widget.atf = true;
         slot.widget = widget;
-
-        console.log(widget);
     }));
 
     res.render(layouts[layout], { title, slots });
