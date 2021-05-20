@@ -14,10 +14,15 @@ html(lang='en')
                 div.row(id='slot-' + slot.id)
 
                     if slot.widget !== undefined && slot.widget.content != undefined
-                        if slot.atf
+                        if slot.mode === 'atf'
                             <!--#include virtual="#{slot.widget.content.ssi.link}" -->
-                        else
-                            #{slot.widget.content.csi.tag}
+
+                        else if slot.mode === 'both'
+                            <!--#include virtual="#{slot.widget.content.ssi.link}" -->
+                            script(type='text/javascript' src=slot.widget.content.csi.link async=true defer=true)
+
+                        else if slot.mode === 'btf'
+                            #{slot.widget.content.ssi.tag}
                             script(type='text/javascript' src=slot.widget.content.csi.link async=true defer=true)
 
                     else
