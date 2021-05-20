@@ -1,21 +1,21 @@
 doctype html
 html(lang='en')
 
-  head
-    link(href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x' crossorigin='anonymous')
-    title= title
+    head
 
-  body
-    h1.text-center Welcome to the frontend!
+        link(href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x' crossorigin='anonymous')
+        title= title
 
-    div.container-fluid.text-center.align-middle
+    body
 
-      each slot in slots
-        div(class='row' id='slot-' + slot.id)
+        div.container-fluid
 
-          p This is slot #{slot.id}. It has the #{slot.widget.id} widget.
+            each slot in slots
+                div(class='row' id='slot-' + slot.id)
 
-          if slot.widget.content
-            <!--#include virtual="#{slot.widget.content.ssi.link}" -->
+                    if slot.widget !== undefined && slot.widget.content != undefined
+                        <!--#include virtual="#{slot.widget.content.ssi.link}" -->
 
-    script(async src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js' integrity='sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4' crossorigin='anonymous')
+                    p This is slot #{slot.id}. It has the #{slot.widget.id} widget.
+
+        script(async src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js' integrity='sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4' crossorigin='anonymous')

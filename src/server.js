@@ -13,8 +13,11 @@ app.set('view engine', 'pug');
 
 // Routes
 app.get('/', async (req, res) => {
-    
+
+    // Extract the page identifier
     const pageId = identifiers['/'];
+
+    // Get the layout of the page
     const content = await axios.post('http://layout.service', { pageId });
     const { title, layout, slots } = content.data.page;
 
@@ -24,11 +27,9 @@ app.get('/', async (req, res) => {
         const { widget: widgetId } = cResp.data;
 
         const wResp = await axios.post('http://widget.service', { widgetId });
-
         let { widget } = wResp.data;
         widget = widget || {};
         widget.id = widget.id || widgetId;
-        widget.atf = true;
         slot.widget = widget;
     }));
 
@@ -44,4 +45,3 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.info(`server is up and running on port: ${port}`);
 });
-
