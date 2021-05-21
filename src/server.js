@@ -1,9 +1,8 @@
 const axios = require('axios');
+const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
-
-const { identifiers, layouts } = require('./pages');
 
 // Create the server
 const app = express();
@@ -14,17 +13,22 @@ app.use(morgan('tiny'));
 app.set('views', path.resolve(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-// Routes
-app.get('*', async (req, res) => {
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-    // Extract the page identifier
-    const pageId = identifiers[req.path];
+// Routes
+app.post('/', async (req, res) => {
+
+    // Extract the page identifier from the request
+    const pageId = req.body.pageId;
+
+    console.debug(`page requested for id: ${pageId}`);
 
     // Get the layout of the page
     const content = await axios.post('http://layout.service', { pageId });
     const { title, layout, slots } = content.data.page;
 
-    console.log(content.data.page);
+    console.debug(content.data.page);
 
     await Promise.all(slots.map(async (slot) => {
 
@@ -37,10 +41,11 @@ app.get('*', async (req, res) => {
         widget.id = widget.id || widgetId;
         slot.widget = widget;
 
-        console.log(widget);
+        console.debug(widget);
+
     }));
 
-    res.render(layouts[layout], { title, slots });
+    res.render(layout, { title, slots });
 });
 
 app.get('/ping', (req, res) => {
