@@ -1,5 +1,6 @@
 const axios = require('axios');
 const express = require('express');
+const morgan = require('morgan');
 const path = require('path');
 
 const { identifiers, layouts } = require('./pages');
@@ -8,18 +9,22 @@ const { identifiers, layouts } = require('./pages');
 const app = express();
 
 // Configurations
+app.use(morgan('tiny'));
+
 app.set('views', path.resolve(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 // Routes
-app.get('/', async (req, res) => {
+app.get('*', async (req, res) => {
 
     // Extract the page identifier
-    const pageId = identifiers['/'];
+    const pageId = identifiers[req.path];
 
     // Get the layout of the page
     const content = await axios.post('http://layout.service', { pageId });
     const { title, layout, slots } = content.data.page;
+
+    console.log(content.data.page);
 
     await Promise.all(slots.map(async (slot) => {
 
@@ -31,6 +36,8 @@ app.get('/', async (req, res) => {
         widget = widget || {};
         widget.id = widget.id || widgetId;
         slot.widget = widget;
+
+        console.log(widget);
     }));
 
     res.render(layouts[layout], { title, slots });
