@@ -13,17 +13,11 @@ html(lang='en')
             each slot in slots
                 div.row(id='slot-' + slot.id)
 
-                    if slot.widget !== undefined && slot.widget.content != undefined
-                        if slot.mode === 'atf'
-                            <!--#include virtual="#{slot.widget.content.ssi.link}" -->
-
-                        else if slot.mode === 'both'
-                            <!--#include virtual="#{slot.widget.content.ssi.link}" -->
-                            script(type='text/javascript' src=slot.widget.content.csi.link async=true defer=true)
-
-                        else if slot.mode === 'btf'
-                            #{slot.widget.content.ssi.tag}
-                            script(type='text/javascript' src=slot.widget.content.csi.link async=true defer=true)
+                    if slot.widget !== undefined && slot.widget.content !== undefined
+                        <!--#block name="fallback" -->
+                            <div class='d-flex flex-column align-items-center mt-5'>The content is currently unavailable. Please try in sometime.</div>
+                        <!--#endblock -->
+                        <!--#include virtual="#{slot.widget.content}" stub="fallback" -->
 
                     else
                         p This is slot #{slot.id}. It has the #{slot.widget.id} widget.
