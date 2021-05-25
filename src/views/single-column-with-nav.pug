@@ -8,10 +8,14 @@ html(lang='en')
 
     body
 
-        div.container-fluid
+        div.container-fluid.d-flex.flex-column.vh-100
 
             each slot in slots
-                div.row(id='slot-' + slot.id)
+
+                - var grow = slot.id !== 'nav' && slot.id !== 'footer'
+                - var footer = slot.id == 'footer'
+
+                div.row.my-2(id='slot-' + slot.id class=footer ? 'footer' : '' class=grow ? 'flex-grow-1': '')
 
                     if slot.widget !== undefined && slot.widget.content !== undefined
                         <!--#block name="fallback" -->
