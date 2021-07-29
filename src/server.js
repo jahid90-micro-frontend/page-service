@@ -4,6 +4,8 @@ const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
 
+const uris = require('./config/uris');
+
 // Create the server
 const app = express();
 
@@ -25,17 +27,17 @@ app.post('/', async (req, res) => {
     console.debug(`page requested for id: ${pageId}`);
 
     // Get the layout of the page
-    const content = await axios.post('http://layout.service', { pageId });
+    const content = await axios.post(`http://${uris.LAYOUT_SERVICE_URI}`, { pageId });
     const { title, layout, slots } = content.data.page;
 
     console.debug(content.data.page);
 
     await Promise.all(slots.map(async (slot) => {
 
-        const cResp = await axios.post('http://content.service', { pageId, slotId: slot.id });
+        const cResp = await axios.post(`http://${uris.CONTENT_SERVICE_URI}`, { pageId, slotId: slot.id });
         const { widget: widgetId } = cResp.data;
 
-        const wResp = await axios.post('http://widget.service', { widgetId });
+        const wResp = await axios.post(`http://${uris.WIDGET_SERVICE_URI}`, { widgetId });
         let { widget } = wResp.data;
         widget = widget || {};
         widget.id = widget.id || widgetId;

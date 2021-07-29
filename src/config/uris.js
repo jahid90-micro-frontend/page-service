@@ -1,0 +1,5 @@
+module.exports = {
+    LAYOUT_SERVICE_URI: process.env.LAYOUT_SERVICE_URI,
+    CONTENT_SERVICE_URI: process.env.CONTENT_SERVICE_URI,
+    WIDGET_SERVICE_URI: process.env.WIDGET_SERVICE_URI
+}
