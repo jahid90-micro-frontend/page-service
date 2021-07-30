@@ -12,9 +12,6 @@ const app = express();
 // Configurations
 app.use(morgan('tiny'));
 
-app.set('views', path.resolve(__dirname, 'views'));
-app.set('view engine', 'pug');
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -27,10 +24,10 @@ app.post('/', async (req, res) => {
     console.debug(`page requested for id: ${pageId}`);
 
     // Get the layout of the page
-    const content = await axios.post(`http://${uris.LAYOUT_SERVICE_URI}`, { pageId });
-    const { title, layout, slots } = content.data.page;
+    const lResp = await axios.post(`http://${uris.LAYOUT_SERVICE_URI}`, { pageId });
+    const { title, layout, slots } = lResp.data.page;
 
-    console.debug(content.data.page);
+    console.debug(lResp.data.page);
 
     await Promise.all(slots.map(async (slot) => {
 
@@ -47,7 +44,11 @@ app.post('/', async (req, res) => {
 
     }));
 
-    res.render(layout, { title, slots });
+    res.json({
+        title,
+        layout,
+        slots
+    });
 });
 
 app.get('/ping', (req, res) => {
