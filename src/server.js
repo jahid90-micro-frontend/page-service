@@ -18,45 +18,50 @@ app.use(bodyParser.json());
 // Routes
 app.post('/', async (req, res) => {
 
-    // Extract the page identifier from the request
-    const pageId = req.body.pageId;
+    try {
 
-    console.debug(`page requested for id: ${pageId}`);
+        // Extract the page identifier from the request
+        const pageId = req.body.pageId;
 
-    // Get the layout of the page
-    const lResp = await axios.post(`http://${uris.LAYOUT_SERVICE_URI}`, { pageId });
-    const { title, layout, slots } = lResp.data.page;
+        const lResp = await axios.post(`http://${uris.LAYOUT_SERVICE_URI}`, { pageId });
+        const { title, layout, slots } = lResp.data.page;
 
-    console.debug(lResp.data.page);
+        const slotsPromises = slots.map((slot) => {
+            return axios.post(`http://${uris.CONTENT_SERVICE_URI}`, { pageId, slotId: slot.id })
+                .then(({ data: { widget: widgetId } }) => axios.post(`http://${uris.WIDGET_SERVICE_URI}`, { widgetId }))
+                .then(({ data: { widget }}) => {
+                    widget = widget || {};
+                    widget.id = widget.id || 'unknown';
+                    slot.widget = widget;
 
-    await Promise.all(slots.map(async (slot) => {
+                    return slot;
+                })
+                .catch((err) => console.error(err.message));
+        });
 
-        const cResp = await axios.post(`http://${uris.CONTENT_SERVICE_URI}`, { pageId, slotId: slot.id });
-        const { widget: widgetId } = cResp.data;
+        const enrichedSlots = await Promise.all(slotsPromises);
 
-        const wResp = await axios.post(`http://${uris.WIDGET_SERVICE_URI}`, { widgetId });
-        let { widget } = wResp.data;
-        widget = widget || {};
-        widget.id = widget.id || widgetId;
-        slot.widget = widget;
+        const response = {
+            title,
+            layout,
+            slots: enrichedSlots
+        };
 
-        console.debug(widget);
+        console.debug(`Request: {pageId: ${pageId}}`);
+        console.debug(`Response: ${JSON.stringify(response)}`);
 
-    }));
+        res.json(response);
 
-    res.json({
-        title,
-        layout,
-        slots
-    });
+    } catch(err) {
+        
+        console.error(err.message);
+
+        res.sendStatus(500);
+    }
 });
 
 app.get('/ping', (req, res) => {
     res.send('OK');
 });
 
-// Start the server
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.info(`server is up and running on port: ${port}`);
-});
+module.exports = app;
