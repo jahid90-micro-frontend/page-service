@@ -1,3 +1,9 @@
+// Enable tracing
+const { init } = require('@jahiduls/lib-tracing');
+init();
+
+console.debug('Tracing library initialized');
+
 // Start the server
 const server = require('./server');
 

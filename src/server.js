@@ -4,7 +4,11 @@ const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
 
-const uris = require('./config/uris');
+const { traceAsync } = require('@jahiduls/lib-tracing');
+
+const contentService = require('./clients/content-service-client');
+const layoutService = require('./clients/layout-service-client');
+const widgetService = require('./clients/widget-service-client');
 
 // Create the server
 const app = express();
@@ -23,12 +27,14 @@ app.post('/', async (req, res) => {
         // Extract the page identifier from the request
         const pageId = req.body.pageId;
 
-        const lResp = await axios.post(`http://${uris.LAYOUT_SERVICE_URI}`, { pageId });
-        const { title, layout, slots } = lResp.data.page;
+        const layoutResponse = await layoutService.tracedGet(pageId);
+        const { title, layout, slots } = layoutResponse.data.page;
+
+        const tracedAll = traceAsync(async (promises) => Promise.all(promises), 'get-all-metadata');
 
         const slotsPromises = slots.map((slot) => {
-            return axios.post(`http://${uris.CONTENT_SERVICE_URI}`, { pageId, slotId: slot.id })
-                .then(({ data: { widget: widgetId } }) => axios.post(`http://${uris.WIDGET_SERVICE_URI}`, { widgetId }))
+            return contentService.tracedGet(pageId, slot.id)
+                .then(({ data: { widget: widgetId } }) => widgetService.tracedGet(widgetId))
                 .then(({ data: { widget }}) => {
                     widget = widget || {};
                     widget.id = widget.id || 'unknown';
@@ -39,7 +45,7 @@ app.post('/', async (req, res) => {
                 .catch((err) => console.error(err.message));
         });
 
-        const enrichedSlots = await Promise.all(slotsPromises);
+        const enrichedSlots = await tracedAll(slotsPromises);
 
         const response = {
             title,
