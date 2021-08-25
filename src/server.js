@@ -33,7 +33,7 @@ app.post('/', async (req, res) => {
         const tracedAll = traceAsync(async (promises) => Promise.all(promises), 'get-all-metadata');
 
         const slotsPromises = slots.map((slot) => {
-            return contentService.tracedGet(pageId, slot.id)
+            return contentService.tracedGetWidgets(pageId, slot.id)
                 .then(({ data: { widget: widgetId } }) => widgetService.tracedGet(widgetId))
                 .then(({ data: { widget }}) => {
                     widget = widget || {};
@@ -46,11 +46,16 @@ app.post('/', async (req, res) => {
         });
 
         const enrichedSlots = await tracedAll(slotsPromises);
+        const modulesResp = await contentService.tracedGetModules(pageId);
+        const { modules } = modulesResp.data;
+
+        console.log(modules);
 
         const response = {
             title,
             layout,
-            slots: enrichedSlots
+            slots: enrichedSlots,
+            modules
         };
 
         console.debug(`Request: {pageId: ${pageId}}`);
@@ -59,7 +64,7 @@ app.post('/', async (req, res) => {
         res.json(response);
 
     } catch(err) {
-        
+
         console.error(err.message);
 
         res.sendStatus(500);
